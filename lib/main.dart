@@ -18,13 +18,12 @@ class MyApp extends ConsumerWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final titleColor = ref.watch(highlightColorProvider);
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     var tab = height > 1000 || width > 1000;
     var port = tab ? -0.6 : -0.7;
     var land = tab ? -0.7 : -0.95;
-    var timerVert = !tab && width > height ? 0.5 : 0.0;
+    var timerVert = !tab && width > height ? 0.4 : 0.0;
     var buttonBarVert = height > width ? port : land;
     return MaterialApp(
       theme:
@@ -41,10 +40,10 @@ class MyApp extends ConsumerWidget {
         child: Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.transparent.withOpacity(0),
-            title: Text("pomodoro",
+            title: const Text(con.pomodoroLabel,
                 style: TextStyle(
                   fontSize: 30,
-                  color: titleColor,
+                  color: Colors.grey,
                   fontWeight: FontWeight.bold,
                 )),
             centerTitle: true,
@@ -59,9 +58,73 @@ class MyApp extends ConsumerWidget {
               alignment: Alignment(0.0, timerVert),
               child: const TimerDisplay(),
             ),
+            const Align(
+              alignment: FractionalOffset.bottomCenter,
+              child: ConfigButton(),
+            )
           ]),
         ),
       ),
+    );
+  }
+}
+
+class SettingsPage extends ConsumerWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Dialog(
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            actions:[
+              IconButton(
+                icon: const Icon(con.closeIcon),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+            ],
+            backgroundColor: Colors.transparent.withOpacity(0),
+            title: const Text(con.settingsLabel,
+                style: TextStyle(
+                  fontSize: 30,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                )
+              ),
+            centerTitle: false,
+          ),
+          body: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('TODO'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ConfigButton extends ConsumerWidget {
+  const ConfigButton({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return IconButton(
+      icon: const Icon(con.settingsIcon),
+      color: Colors.grey,
+      onPressed: () => showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => const SettingsPage()),
     );
   }
 }
@@ -103,22 +166,20 @@ class ScreenButton extends ConsumerWidget {
         ),
         child: Text(title,
           style: const TextStyle(
-          fontSize: 13,
-          color: Colors.black,
-          fontWeight: FontWeight.normal,
-          )
-        ),
+            fontSize: 13,
+            color: Colors.black,
+            fontWeight: FontWeight.normal,
+          )),
       );
     } else {
       return TextButton(
         onPressed: onPressed,
         child: Text(title,
           style: const TextStyle(
-          fontSize: 13,
-          color: Colors.grey,
-          fontWeight: FontWeight.normal,
-          )
-        ),
+            fontSize: 13,
+            color: Colors.grey,
+            fontWeight: FontWeight.normal,
+          )),
       );
     }
   }
@@ -128,6 +189,7 @@ class ButtonBar extends ConsumerWidget {
   const ButtonBar({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.watch(controllerProvider);
     final activeButton = ref.watch(activeScreenButtonProvider);
     final pomoActive = activeButton == con.pomodoroLabel;
     final longActive = activeButton == con.longBreakLabel;
@@ -137,32 +199,53 @@ class ButtonBar extends ConsumerWidget {
       spacing: 8.0,
       children: <Widget>[
         ScreenButton(
-          title: con.pomodoroLabel,
-          active: pomoActive,
-          onPressed: () {
-            final duration = ref.watch(pomoDurationProvider);
-            ref.read(activeScreenButtonProvider.notifier).update(con.pomodoroLabel);
-            ref.read(timerDurationProvider.notifier).update(duration);
-          }
-        ),
+            title: con.pomodoroLabel,
+            active: pomoActive,
+            onPressed: () {
+              final duration = ref.watch(pomoDurationProvider);
+              ref
+                  .read(activeScreenButtonProvider.notifier)
+                  .update(con.pomodoroLabel);
+              ref
+                  .read(timerDurationProvider.notifier)
+                  .update(duration);
+              controller.reset();
+              ref
+                  .read(timerButtonCallbackProvider.notifier)
+                  .update(() => controller.restart(duration: duration));
+            }),
         ScreenButton(
             title: con.shortBreakLabel,
             active: longActive,
             onPressed: () {
               final duration = ref.watch(longBreakDurationProvider);
-              ref.read(activeScreenButtonProvider.notifier).update(con.longBreakLabel);
-              ref.read(timerDurationProvider.notifier).update(duration);
-            }
-          ),
+              ref
+                  .read(activeScreenButtonProvider.notifier)
+                  .update(con.longBreakLabel);
+              ref
+                  .read(timerDurationProvider.notifier)
+                  .update(duration);
+              controller.reset();
+              ref
+                  .read(timerButtonCallbackProvider.notifier)
+                  .update(() => controller.restart(duration: duration));
+            }),
         ScreenButton(
             title: con.longBreakLabel,
             active: shortActive,
             onPressed: () {
               final duration = ref.watch(shortBreakDurationProvider);
-              ref.read(activeScreenButtonProvider.notifier).update(con.shortBreakLabel);
-              ref.read(timerDurationProvider.notifier).update(duration);
-            }
-          ),
+              ref
+                  .read(activeScreenButtonProvider.notifier)
+                  .update(con.shortBreakLabel);
+              ref
+                  .read(timerDurationProvider.notifier)
+                  .update(duration);
+              controller.reset();
+              ref
+                  .read(timerButtonCallbackProvider.notifier)
+                  .update(() => controller.restart(duration: duration));
+            }),
       ],
     );
   }
@@ -176,7 +259,6 @@ class TimerDisplay extends ConsumerWidget {
     final controller = ref.watch(controllerProvider);
     final ringColor = ref.watch(highlightColorProvider);
     controller.isPaused.addListener(() {
-      debugPrint("----> isPaused: ${controller.isPaused.value}");
       if (controller.isPaused.value == true) {
         ref.read(timerButtonTitleProvider.notifier).update(con.resumeLabel);
         ref
@@ -186,7 +268,6 @@ class TimerDisplay extends ConsumerWidget {
     });
     controller.isResumed.addListener(() {
       if (controller.isResumed.value == true) {
-        debugPrint("----> isResumed: ${controller.isResumed.value}");
         ref.read(timerButtonTitleProvider.notifier).update(con.pauseLabel);
         ref
             .read(timerButtonCallbackProvider.notifier)
@@ -208,72 +289,34 @@ class TimerDisplay extends ConsumerWidget {
                     width: 180,
                     height: 180,
                     child: CircularCountDownTimer(
-                      // Countdown duration in Seconds.
                       duration: duration,
-
-                      // Countdown initial elapsed Duration in Seconds.
                       initialDuration: 0,
-
-                      // Controls (i.e Start, Pause, Resume, Restart) the Countdown Timer.
                       controller: controller,
-
-                      // Width of the Countdown Widget.
-                      width: MediaQuery.of(context).size.width / 2,
-
-                      // Height of the Countdown Widget.
-                      height: MediaQuery.of(context).size.height / 2,
-
-                      // Ring Color for Countdown Widget.
+                      // width and height don't seem to matter in a sized box
+                      width: 0.0,
+                      height: 0.0,
                       ringColor: ringColor,
-
-                      // Ring Gradient for Countdown Widget.
                       ringGradient: const LinearGradient(
                           colors: [Colors.black, Color(0xFF282a57)]),
-
-                      // Filling Color for Countdown Widget.
                       fillColor: ringColor,
-
-                      // Filling Gradient for Countdown Widget.
                       fillGradient: null,
-
-                      // Background Color for Countdown Widget.
                       backgroundColor: Colors.indigo,
-
-                      // Background Gradient for Countdown Widget.
                       backgroundGradient: const LinearGradient(
                           colors: [Colors.black, Color(0xFF282a57)]),
-
-                      // Border Thickness of the Countdown Ring.
                       strokeWidth: 8.0,
-
-                      // Begin and end contours with a flat edge and no extension.
                       strokeCap: StrokeCap.round,
-
-                      // Text Style for Countdown Text.
                       textStyle: const TextStyle(
                         fontSize: 33.0,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
-
-                      // Format for the Countdown Text.
-                      textFormat: CountdownTextFormat.MM_SS,
-
-                      // Handles Countdown Timer (true for Reverse Countdown (max to 0), false for Forward Countdown (0 to max)).
+                      textFormat: CountdownTextFormat
+                          .MM_SS, // doesn't take effect with the custom format
                       isReverse: true,
-
-                      // Handles Animation Direction (true for Reverse Animation, false for Forward Animation).
                       isReverseAnimation: false,
-
-                      // Handles visibility of the Countdown Text.
                       isTimerTextShown: true,
-
-                      // Handles the timer start.
                       autoStart: false,
-
-                      // This Callback will execute when the Countdown Starts.
                       onStart: () {
-                        debugPrint('Countdown Started');
                         ref
                             .read(timerButtonTitleProvider.notifier)
                             .update(con.pauseLabel);
@@ -281,29 +324,29 @@ class TimerDisplay extends ConsumerWidget {
                             .read(timerButtonCallbackProvider.notifier)
                             .update(() => controller.pause());
                       },
-
-                      // This Callback will execute when the Countdown Ends.
                       onComplete: () {
-                        // Here, do whatever you want
-                        debugPrint('Countdown Ended');
                         controller.reset();
                         ref
                             .read(timerButtonTitleProvider.notifier)
                             .update(con.startLabel);
-                        ref
-                            .read(timerButtonCallbackProvider.notifier)
-                            .update(() => controller.restart());
+                        ref.
+                            read(timerButtonCallbackProvider.notifier)
+                            .update(() => controller.restart(duration: duration));
                       },
-
-                      // This Callback will execute when the Countdown Changes.
                       onChange: (String timeStamp) {},
                       timeFormatterFunction:
                           (defaultFormatterFunction, duration) {
                         if (duration.inSeconds == 0) {
-                          return "00:00";
+                          return "0";
                         } else {
-                          return Function.apply(
-                              defaultFormatterFunction, [duration]);
+                          // Only way I could think of to only update once per minute
+                          var sec = duration.inSeconds % 60;
+                          if (sec != 0) {
+                            return ((duration.inMinutes + 1) % 60).toString();
+                          } else {
+                            return (duration.inMinutes % 60).toString();
+                          }
+                          // return Function.apply(defaultFormatterFunction, [duration]);
                         }
                       },
                     ),
@@ -322,6 +365,7 @@ class TimerDisplay extends ConsumerWidget {
   }
 }
 
+// TO-DO: see if there is a way to move all these to a separate file
 @riverpod
 CountDownController controller(ControllerRef ref) => CountDownController();
 
@@ -329,8 +373,9 @@ CountDownController controller(ControllerRef ref) => CountDownController();
 class TimerButtonCallback extends _$TimerButtonCallback {
   @override
   VoidCallback build() => () {
+        final duration = ref.watch(timerDurationProvider);
         final controller = ref.watch(controllerProvider);
-        controller.start();
+        controller.restart(duration: duration);
       };
 
   void update(VoidCallback cb) {
@@ -379,15 +424,6 @@ class TimerButtonTitle extends _$TimerButtonTitle {
   @override
   String build() => con.startLabel;
   void update(String val) {
-    state = val;
-  }
-}
-
-@riverpod
-class TimerIsPaused extends _$TimerIsPaused {
-  @override
-  bool build() => false;
-  void update(bool val) {
     state = val;
   }
 }

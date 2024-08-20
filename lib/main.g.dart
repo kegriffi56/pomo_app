@@ -21,7 +21,7 @@ final controllerProvider = AutoDisposeProvider<CountDownController>.internal(
 
 typedef ControllerRef = AutoDisposeProviderRef<CountDownController>;
 String _$timerButtonCallbackHash() =>
-    r'26eeea765d1791e0ecca8c1476c541c5582ee9dc';
+    r'84baf298830c1e2c616bb6eaac39326f97da8212';
 
 /// See also [TimerButtonCallback].
 @ProviderFor(TimerButtonCallback)
@@ -117,22 +117,6 @@ final timerButtonTitleProvider =
 );
 
 typedef _$TimerButtonTitle = AutoDisposeNotifier<String>;
-String _$timerIsPausedHash() => r'dd141611c7d2d0c50517136059b908a2751f62fd';
-
-/// See also [TimerIsPaused].
-@ProviderFor(TimerIsPaused)
-final timerIsPausedProvider =
-    AutoDisposeNotifierProvider<TimerIsPaused, bool>.internal(
-  TimerIsPaused.new,
-  name: r'timerIsPausedProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$timerIsPausedHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef _$TimerIsPaused = AutoDisposeNotifier<bool>;
 String _$highlightColorHash() => r'e69b3a1c519ac1d27fcb903b86ae128591ffb943';
 
 /// See also [HighlightColor].
