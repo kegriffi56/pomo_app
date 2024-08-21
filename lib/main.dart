@@ -1,21 +1,20 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:circular_countdown_timer/circular_countdown_timer.dart';
+import "package:flutter/material.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:riverpod_annotation/riverpod_annotation.dart";
+import "package:circular_countdown_timer/circular_countdown_timer.dart";
 import "package:pomo_app/constants/constants.dart" as con;
 
-part 'main.g.dart';
+part "main.g.dart";
 
 void main() {
   runApp(const ProviderScope(
-    child: MyApp(),
+    child: PomoApp(),
   ));
 }
 
-class MyApp extends ConsumerWidget {
-  const MyApp({super.key});
+class PomoApp extends ConsumerWidget {
+  const PomoApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final height = MediaQuery.of(context).size.height;
@@ -43,7 +42,7 @@ class MyApp extends ConsumerWidget {
             title: const Text(con.pomodoroLabel,
                 style: TextStyle(
                   fontSize: 30,
-                  color: Colors.grey,
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                 )),
             centerTitle: true,
@@ -74,20 +73,22 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final applyButtonColor = ref.watch(highlightColorProvider);
     return Dialog(
       child: SizedBox(
         width: MediaQuery.of(context).size.width * 0.8,
         height: MediaQuery.of(context).size.height * 0.8,
         child: Scaffold(
           appBar: AppBar(
+            titleSpacing: 20.0,
             automaticallyImplyLeading: false,
-            actions:[
+            actions: [
               IconButton(
                 icon: const Icon(con.closeIcon),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
             ],
             backgroundColor: Colors.transparent.withOpacity(0),
             title: const Text(con.settingsLabel,
@@ -95,17 +96,87 @@ class SettingsPage extends ConsumerWidget {
                   fontSize: 30,
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
-                )
-              ),
+                )),
             centerTitle: false,
           ),
-          body: const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
+          body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Stack(
               children: [
-                Text('TODO'),
+                const Column(children: [
+                  Divider(),
+                  // Duration
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(con.timeLabel,
+                        style: TextStyle(
+                          letterSpacing: 3.0,
+                          fontSize: 15,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w700,
+                        )),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("TODO"),
+                      Text("TODO"),
+                      Text("TODO"),
+                    ],
+                  ),
+                  Divider(),
+                  // Font
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(con.fontLabel,
+                          style: TextStyle(
+                            letterSpacing: 3.0,
+                            fontSize: 15,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w700,
+                          )),
+                      Text("TODO"),
+                      Text("TODO"),
+                      Text("TODO"),
+                    ],
+                  ),
+                  Divider(),
+                  // Color
+                  ColorSettings(),
+                ]),
+                Align(
+                  alignment: const FractionalOffset(0.5, 1.055),
+                  child: SizedBox(
+                    width: 150,
+                    child: FloatingActionButton.extended(
+                      backgroundColor: applyButtonColor,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30.0),
+                          topRight: Radius.circular(30.0),
+                          bottomLeft: Radius.circular(30.0),
+                          bottomRight: Radius.circular(30.0),
+                        ),
+                      ),
+                      onPressed: () {
+                        final pendingColor =
+                            ref.watch(activeColorButtonProvider);
+                        ref
+                            .read(highlightColorProvider.notifier)
+                            .update(pendingColor);
+                      },
+                      label: const Text(
+                        con.applyLabel,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -115,11 +186,55 @@ class SettingsPage extends ConsumerWidget {
   }
 }
 
+class ColorSettings extends ConsumerWidget {
+  const ColorSettings({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(con.colorLabel,
+            style: TextStyle(
+              letterSpacing: 3.0,
+              fontSize: 15,
+              color: Colors.black,
+              fontWeight: FontWeight.w700,
+            )),
+        ColorButton(
+          color: Colors.orange,
+          onPressed: () {
+            ref
+                .read(activeColorButtonProvider.notifier)
+                .update(Colors.orange);
+          },
+        ),
+        ColorButton(
+          color: Colors.cyanAccent,
+          onPressed: () {
+            ref
+                .read(activeColorButtonProvider.notifier)
+                .update(Colors.cyanAccent);
+          },
+        ),
+        ColorButton(
+          color: Colors.purpleAccent,
+          onPressed: () {
+            ref
+                .read(activeColorButtonProvider.notifier)
+                .update(Colors.purpleAccent);
+          },
+        ),
+      ],
+    );
+  }
+}
+
 class ConfigButton extends ConsumerWidget {
   const ConfigButton({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return IconButton(
+      key: con.settingsKey,
       icon: const Icon(con.settingsIcon),
       color: Colors.grey,
       onPressed: () => showDialog<String>(
@@ -147,6 +262,26 @@ class TimerButton extends ConsumerWidget {
   }
 }
 
+class ColorButton extends ConsumerWidget {
+  const ColorButton({required this.color, this.onPressed, super.key});
+  final VoidCallback? onPressed;
+  final Color color;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activeButton = ref.watch(activeColorButtonProvider);
+    final active = activeButton == color;
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        shape: const CircleBorder(),
+        padding: const EdgeInsets.all(15),
+      ),
+      onPressed: onPressed,
+      child: active ? const Icon(con.checkMark) : const Text(""),
+    );
+  }
+}
+
 class ScreenButton extends ConsumerWidget {
   const ScreenButton(
       {required this.title, required this.active, this.onPressed, super.key});
@@ -165,21 +300,21 @@ class ScreenButton extends ConsumerWidget {
           elevation: 5, // button's elevation when it's pressed
         ),
         child: Text(title,
-          style: const TextStyle(
-            fontSize: 13,
-            color: Colors.black,
-            fontWeight: FontWeight.normal,
-          )),
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.black,
+              fontWeight: FontWeight.normal,
+            )),
       );
     } else {
       return TextButton(
         onPressed: onPressed,
         child: Text(title,
-          style: const TextStyle(
-            fontSize: 13,
-            color: Colors.grey,
-            fontWeight: FontWeight.normal,
-          )),
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.grey,
+              fontWeight: FontWeight.normal,
+            )),
       );
     }
   }
@@ -206,9 +341,7 @@ class ButtonBar extends ConsumerWidget {
               ref
                   .read(activeScreenButtonProvider.notifier)
                   .update(con.pomodoroLabel);
-              ref
-                  .read(timerDurationProvider.notifier)
-                  .update(duration);
+              ref.read(timerDurationProvider.notifier).update(duration);
               controller.reset();
               ref
                   .read(timerButtonCallbackProvider.notifier)
@@ -218,13 +351,11 @@ class ButtonBar extends ConsumerWidget {
             title: con.shortBreakLabel,
             active: longActive,
             onPressed: () {
-              final duration = ref.watch(longBreakDurationProvider);
+              final duration = ref.watch(shortBreakDurationProvider);
               ref
                   .read(activeScreenButtonProvider.notifier)
                   .update(con.longBreakLabel);
-              ref
-                  .read(timerDurationProvider.notifier)
-                  .update(duration);
+              ref.read(timerDurationProvider.notifier).update(duration);
               controller.reset();
               ref
                   .read(timerButtonCallbackProvider.notifier)
@@ -234,13 +365,11 @@ class ButtonBar extends ConsumerWidget {
             title: con.longBreakLabel,
             active: shortActive,
             onPressed: () {
-              final duration = ref.watch(shortBreakDurationProvider);
+              final duration = ref.watch(longBreakDurationProvider);
               ref
                   .read(activeScreenButtonProvider.notifier)
                   .update(con.shortBreakLabel);
-              ref
-                  .read(timerDurationProvider.notifier)
-                  .update(duration);
+              ref.read(timerDurationProvider.notifier).update(duration);
               controller.reset();
               ref
                   .read(timerButtonCallbackProvider.notifier)
@@ -329,9 +458,8 @@ class TimerDisplay extends ConsumerWidget {
                         ref
                             .read(timerButtonTitleProvider.notifier)
                             .update(con.startLabel);
-                        ref.
-                            read(timerButtonCallbackProvider.notifier)
-                            .update(() => controller.restart(duration: duration));
+                        ref.read(timerButtonCallbackProvider.notifier).update(
+                            () => controller.restart(duration: duration));
                       },
                       onChange: (String timeStamp) {},
                       timeFormatterFunction:
@@ -340,6 +468,7 @@ class TimerDisplay extends ConsumerWidget {
                           return "0";
                         } else {
                           // Only way I could think of to only update once per minute
+                          // comment out  the next 6 lines and uncomment the 7th to get seconds
                           var sec = duration.inSeconds % 60;
                           if (sec != 0) {
                             return ((duration.inMinutes + 1) % 60).toString();
@@ -442,6 +571,15 @@ class ActiveScreenButton extends _$ActiveScreenButton {
   @override
   String build() => con.pomodoroLabel;
   void update(String val) {
+    state = val;
+  }
+}
+
+@riverpod
+class ActiveColorButton extends _$ActiveColorButton {
+  @override
+  Color build() => Colors.orange;
+  void update(Color val) {
     state = val;
   }
 }

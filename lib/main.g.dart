@@ -150,5 +150,21 @@ final activeScreenButtonProvider =
 );
 
 typedef _$ActiveScreenButton = AutoDisposeNotifier<String>;
+String _$activeColorButtonHash() => r'954ee18e8c2eac40db7e27d884fbddcf7e936970';
+
+/// See also [ActiveColorButton].
+@ProviderFor(ActiveColorButton)
+final activeColorButtonProvider =
+    AutoDisposeNotifierProvider<ActiveColorButton, Color>.internal(
+  ActiveColorButton.new,
+  name: r'activeColorButtonProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$activeColorButtonHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$ActiveColorButton = AutoDisposeNotifier<Color>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
